@@ -95,10 +95,11 @@ function Index() {
   }, [sessionComplete, currentCard, currentIndex, totalCards]);
 
   return (
-    <div className="min-h-screen bg-frost font-body text-ink antialiased">
+    <div className="relative min-h-screen overflow-hidden bg-frost font-body text-ink antialiased">
+      <CloudBackground />
       <Header progress={progress} />
 
-      <main className="mx-auto max-w-5xl px-6 pb-24">
+      <main className="relative mx-auto max-w-5xl px-6 pb-24">
         <section className="grid grid-cols-1 gap-10 md:grid-cols-12 md:items-center">
           <div className="md:col-span-7">
             <p className="text-base font-medium text-rose">
@@ -144,6 +145,47 @@ function Index() {
           </span>
         </section>
       </main>
+    </div>
+  );
+}
+
+function CloudBackground() {
+  return (
+    <div
+      className="pointer-events-none absolute inset-0 -z-10"
+      aria-hidden="true"
+    >
+      <svg
+        viewBox="0 0 1200 800"
+        preserveAspectRatio="xMidYMid slice"
+        className="absolute inset-0 h-full w-full"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <defs>
+          <filter id="cloud-glow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="24" result="blur" />
+            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+          </filter>
+        </defs>
+        <g filter="url(#cloud-glow)" opacity="0.45">
+          <path
+            fill="oklch(0.76 0.09 250 / 35%)"
+            d="M-120 180c120-60 260-40 360 20s180 100 300 60 240-80 360-40 240 100 300 180v-400H-120z"
+          />
+          <path
+            fill="oklch(0.955 0.06 14.81 / 30%)"
+            d="M900 120c100-50 220-30 320 30s160 90 260 50 200-70 300-30v-200H900z"
+          />
+          <path
+            fill="oklch(0.76 0.09 250 / 25%)"
+            d="M100 520c140-70 300-50 440 30s220 110 360 70 280-90 420-50 200 110 280 190v-400H100z"
+          />
+          <path
+            fill="oklch(0.955 0.06 14.81 / 22%)"
+            d="M-80 640c100-40 220-20 320 30s180 80 280 50 240-60 340-20 200 80 240 140v-300H-80z"
+          />
+        </g>
+      </svg>
     </div>
   );
 }

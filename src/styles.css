@@ -109,7 +109,7 @@
   --sidebar-ring: oklch(0.829 0.0324 269.95);
 
   /* Named pastel tokens */
-  --frost: oklch(0.967 0.0229 12.91);
+  --frost: oklch(0.967 0.008 245);
   --blush: oklch(0.947 0.0514 14.81);
   --ink: oklch(0.402 0.0212 267.62);
   --mist: oklch(0.715 0.0284 273.01);

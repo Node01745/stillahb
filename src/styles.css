@@ -75,7 +75,7 @@
   --radius: 0.625rem;
 
   /* Pastel light theme — calm watercolor ritual */
-  --background: oklch(0.967 0.0229 12.91);
+  --background: oklch(0.967 0.008 245);
   --foreground: oklch(0.402 0.0212 267.62);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.402 0.0212 267.62);

@@ -25,11 +25,11 @@ function Index() {
   const [sessionComplete, setSessionComplete] = useState(false);
 
   const level = useMemo(
-    () => levels.find((l) => l.id === selectedLevelId) ?? levels[0],
+    () => (levels.find((l) => l.id === selectedLevelId) ?? levels[0]) as Level,
     [selectedLevelId]
   );
 
-  const currentCard = level.cards[currentIndex];
+  const currentCard = level.cards[currentIndex] as Flashcard;
   const totalCards = level.cards.length;
   const progress = Math.round((currentIndex / totalCards) * 100);
   const knownCount = knownIds.size;

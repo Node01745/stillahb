@@ -115,7 +115,7 @@ export const levels: Level[] = [
       b("i14", "hungrig", "hungry", "/ˈhɵŋːrɪɡ/", "adj.", "Är du hungrig?"),
       b("i15", "törstig", "thirsty", "/ˈtœʂːtɪɡ/", "adj.", "Jag är jättetörstig."),
       b("i16", "jobba", "work", "/ˈjɔbːa/", "v.", "Jag jobbar hemifrån."),
-      b("i17", "sovа".replace("а","a"), "sleep", "/ˈsoːva/", "v.", "Jag måste sova nu."),
+      b("i17", "sova", "sleep", "/ˈsoːva/", "v.", "Jag måste sova nu."),
       b("i18", "vakna", "wake up", "/ˈvakːna/", "v.", "Jag vaknar tidigt."),
       b("i19", "laga mat", "cook", "/ˈlɑːɡa mɑːt/", "v. phrase", "Vi lagar mat tillsammans."),
       b("i20", "handla", "shop, buy groceries", "/ˈhanːdla/", "v.", "Jag ska handla efter jobbet."),

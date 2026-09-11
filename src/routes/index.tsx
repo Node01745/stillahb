@@ -17,8 +17,11 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
+  const SESSION_SIZE = 20;
+
   const [selectedLevelId, setSelectedLevelId] = useState<string>(levels[1]?.id ?? levels[0]!.id);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [sessionSeed, setSessionSeed] = useState(0);
+  const [queue, setQueue] = useState<Flashcard[]>([]);
   const [isFlipped, setIsFlipped] = useState(false);
   const [knownIds, setKnownIds] = useState<Set<string>>(new Set());
   const [learningIds, setLearningIds] = useState<Set<string>>(new Set());
@@ -29,19 +32,29 @@ function Index() {
     [selectedLevelId]
   );
 
-  const currentCard = level.cards[currentIndex] as Flashcard;
-  const totalCards = level.cards.length;
-  const progress = Math.round((currentIndex / totalCards) * 100);
+  // Build a fresh shuffled session of 20 cards whenever the level or session changes.
+  useEffect(() => {
+    const shuffled = [...level.cards];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j]!, shuffled[i]!];
+    }
+    setQueue(shuffled.slice(0, SESSION_SIZE));
+    setIsFlipped(false);
+    setKnownIds(new Set());
+    setLearningIds(new Set());
+    setSessionComplete(false);
+  }, [level, sessionSeed]);
+
+  const totalCards = Math.min(SESSION_SIZE, level.cards.length);
+  const currentCard = queue[0];
+  const progress = Math.round((knownIds.size / totalCards) * 100);
   const knownCount = knownIds.size;
   const learningCount = learningIds.size;
 
   const resetSession = (levelId: string) => {
     setSelectedLevelId(levelId);
-    setCurrentIndex(0);
-    setIsFlipped(false);
-    setKnownIds(new Set());
-    setLearningIds(new Set());
-    setSessionComplete(false);
+    setSessionSeed((prev) => prev + 1);
   };
 
   const handleLevelChange = (levelId: string) => {

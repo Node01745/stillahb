@@ -70,17 +70,18 @@ function Index() {
     if (!currentCard) return;
 
     if (known) {
-      setKnownIds((prev) => new Set([...prev, currentCard.id]));
+      const newKnown = new Set([...knownIds, currentCard.id]);
+      setKnownIds(newKnown);
+      setQueue((prev) => prev.slice(1));
+      if (newKnown.size >= totalCards) {
+        setSessionComplete(true);
+      }
     } else {
       setLearningIds((prev) => new Set([...prev, currentCard.id]));
+      // "Still learning" cards go back to the end of the deck until known.
+      setQueue((prev) => [...prev.slice(1), currentCard]);
     }
-
-    if (currentIndex + 1 >= totalCards) {
-      setSessionComplete(true);
-    } else {
-      setCurrentIndex((prev) => prev + 1);
-      setIsFlipped(false);
-    }
+    setIsFlipped(false);
   };
 
   const handleRestart = () => {
@@ -105,7 +106,7 @@ function Index() {
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [sessionComplete, currentCard, currentIndex, totalCards]);
+  }, [sessionComplete, currentCard, knownIds, totalCards]);
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-frost font-body text-ink antialiased">
@@ -131,7 +132,7 @@ function Index() {
             ) : (
               <StudyCard
                 card={currentCard}
-                currentIndex={currentIndex}
+                currentIndex={knownCount}
                 totalCards={totalCards}
                 levelDuration={level.duration}
                 isFlipped={isFlipped}

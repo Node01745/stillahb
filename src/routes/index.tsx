@@ -167,33 +167,33 @@ function CloudBackground() {
             <feComposite in="SourceGraphic" in2="blur" operator="over" />
           </filter>
         </defs>
-        <g filter="url(#cloud-glow)" opacity="0.8">
+        <g filter="url(#cloud-glow)" opacity="0.9">
           {/* Top-left blue cloud */}
-          <g fill="oklch(0.76 0.09 250 / 45%)">
-            <ellipse cx="220" cy="160" rx="130" ry="70" />
-            <ellipse cx="340" cy="150" rx="110" ry="65" />
-            <ellipse cx="280" cy="120" rx="90" ry="55" />
-            <ellipse cx="150" cy="180" rx="80" ry="50" />
+          <g fill="oklch(0.97 0.04 250 / 55%)">
+            <ellipse cx="220" cy="160" rx="150" ry="80" />
+            <ellipse cx="360" cy="150" rx="130" ry="75" />
+            <ellipse cx="290" cy="110" rx="100" ry="60" />
+            <ellipse cx="130" cy="190" rx="90" ry="55" />
           </g>
           {/* Top-right blush cloud */}
-          <g fill="oklch(0.955 0.06 14.81 / 40%)">
-            <ellipse cx="980" cy="130" rx="120" ry="65" />
-            <ellipse cx="1080" cy="145" rx="100" ry="60" />
-            <ellipse cx="1030" cy="105" rx="85" ry="50" />
-            <ellipse cx="900" cy="155" rx="75" ry="45" />
+          <g fill="oklch(0.97 0.035 14.81 / 50%)">
+            <ellipse cx="960" cy="130" rx="140" ry="75" />
+            <ellipse cx="1080" cy="150" rx="120" ry="70" />
+            <ellipse cx="1010" cy="100" rx="95" ry="60" />
+            <ellipse cx="880" cy="160" rx="85" ry="50" />
           </g>
           {/* Mid-right blue cloud */}
-          <g fill="oklch(0.76 0.09 250 / 35%)">
-            <ellipse cx="920" cy="420" rx="140" ry="75" />
-            <ellipse cx="1050" cy="405" rx="115" ry="70" />
-            <ellipse cx="990" cy="370" rx="95" ry="60" />
+          <g fill="oklch(0.97 0.03 250 / 45%)">
+            <ellipse cx="940" cy="440" rx="160" ry="85" />
+            <ellipse cx="1080" cy="420" rx="130" ry="80" />
+            <ellipse cx="1000" cy="380" rx="110" ry="65" />
           </g>
           {/* Bottom-left blush cloud */}
-          <g fill="oklch(0.955 0.06 14.81 / 32%)">
-            <ellipse cx="180" cy="700" rx="130" ry="70" />
-            <ellipse cx="300" cy="685" rx="110" ry="65" />
-            <ellipse cx="240" cy="650" rx="90" ry="55" />
-            <ellipse cx="80" cy="715" rx="80" ry="50" />
+          <g fill="oklch(0.97 0.03 14.81 / 42%)">
+            <ellipse cx="160" cy="720" rx="150" ry="80" />
+            <ellipse cx="300" cy="700" rx="130" ry="75" />
+            <ellipse cx="230" cy="660" rx="100" ry="60" />
+            <ellipse cx="60" cy="740" rx="90" ry="55" />
           </g>
         </g>
       </svg>

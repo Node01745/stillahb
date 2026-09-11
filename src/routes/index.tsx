@@ -211,7 +211,7 @@ function Header({ progress }: { progress: number }) {
               cy="22"
               r="18"
               fill="none"
-              stroke="oklch(0.829 0.0324 269.95 / 25%)"
+              stroke="oklch(0.76 0.09 250 / 25%)"
               strokeWidth="4"
             />
             <circle

@@ -17,8 +17,11 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
+  const SESSION_SIZE = 20;
+
   const [selectedLevelId, setSelectedLevelId] = useState<string>(levels[1]?.id ?? levels[0]!.id);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [sessionSeed, setSessionSeed] = useState(0);
+  const [queue, setQueue] = useState<Flashcard[]>([]);
   const [isFlipped, setIsFlipped] = useState(false);
   const [knownIds, setKnownIds] = useState<Set<string>>(new Set());
   const [learningIds, setLearningIds] = useState<Set<string>>(new Set());
@@ -29,19 +32,29 @@ function Index() {
     [selectedLevelId]
   );
 
-  const currentCard = level.cards[currentIndex] as Flashcard;
-  const totalCards = level.cards.length;
-  const progress = Math.round((currentIndex / totalCards) * 100);
+  // Build a fresh shuffled session of 20 cards whenever the level or session changes.
+  useEffect(() => {
+    const shuffled = [...level.cards];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j]!, shuffled[i]!];
+    }
+    setQueue(shuffled.slice(0, SESSION_SIZE));
+    setIsFlipped(false);
+    setKnownIds(new Set());
+    setLearningIds(new Set());
+    setSessionComplete(false);
+  }, [level, sessionSeed]);
+
+  const totalCards = Math.min(SESSION_SIZE, level.cards.length);
+  const currentCard = queue[0];
+  const progress = Math.round((knownIds.size / totalCards) * 100);
   const knownCount = knownIds.size;
   const learningCount = learningIds.size;
 
   const resetSession = (levelId: string) => {
     setSelectedLevelId(levelId);
-    setCurrentIndex(0);
-    setIsFlipped(false);
-    setKnownIds(new Set());
-    setLearningIds(new Set());
-    setSessionComplete(false);
+    setSessionSeed((prev) => prev + 1);
   };
 
   const handleLevelChange = (levelId: string) => {
@@ -57,17 +70,18 @@ function Index() {
     if (!currentCard) return;
 
     if (known) {
-      setKnownIds((prev) => new Set([...prev, currentCard.id]));
+      const newKnown = new Set([...knownIds, currentCard.id]);
+      setKnownIds(newKnown);
+      setQueue((prev) => prev.slice(1));
+      if (newKnown.size >= totalCards) {
+        setSessionComplete(true);
+      }
     } else {
       setLearningIds((prev) => new Set([...prev, currentCard.id]));
+      // "Still learning" cards go back to the end of the deck until known.
+      setQueue((prev) => [...prev.slice(1), currentCard]);
     }
-
-    if (currentIndex + 1 >= totalCards) {
-      setSessionComplete(true);
-    } else {
-      setCurrentIndex((prev) => prev + 1);
-      setIsFlipped(false);
-    }
+    setIsFlipped(false);
   };
 
   const handleRestart = () => {
@@ -92,11 +106,10 @@ function Index() {
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [sessionComplete, currentCard, currentIndex, totalCards]);
+  }, [sessionComplete, currentCard, knownIds, totalCards]);
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-frost font-body text-ink antialiased">
-      <CloudBackground />
       <Header progress={progress} />
 
       <main className="relative mx-auto max-w-5xl px-6 pb-24">
@@ -116,17 +129,17 @@ function Index() {
                 learningCount={learningCount}
                 onRestart={handleRestart}
               />
-            ) : (
+            ) : currentCard ? (
               <StudyCard
                 card={currentCard}
-                currentIndex={currentIndex}
+                currentIndex={knownCount}
                 totalCards={totalCards}
                 levelDuration={level.duration}
                 isFlipped={isFlipped}
                 onFlip={handleFlip}
                 onNext={handleNext}
               />
-            )}
+            ) : null}
           </div>
 
           <LevelSelector
@@ -149,64 +162,12 @@ function Index() {
   );
 }
 
-function CloudBackground() {
-  return (
-    <div
-      className="pointer-events-none absolute inset-0 -z-10"
-      aria-hidden="true"
-    >
-      <svg
-        viewBox="0 0 1200 900"
-        preserveAspectRatio="xMidYMid slice"
-        className="absolute inset-0 h-full w-full"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <defs>
-          <filter id="cloud-glow" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="22" result="blur" />
-            <feComposite in="SourceGraphic" in2="blur" operator="over" />
-          </filter>
-        </defs>
-        <g filter="url(#cloud-glow)" opacity="1">
-          {/* Top-left blue cloud */}
-          <g fill="oklch(0.94 0.06 250 / 50%)">
-            <ellipse cx="220" cy="160" rx="150" ry="80" />
-            <ellipse cx="360" cy="150" rx="130" ry="75" />
-            <ellipse cx="290" cy="110" rx="100" ry="60" />
-            <ellipse cx="130" cy="190" rx="90" ry="55" />
-          </g>
-          {/* Top-right blush cloud */}
-          <g fill="oklch(0.94 0.055 14.81 / 45%)">
-            <ellipse cx="960" cy="130" rx="140" ry="75" />
-            <ellipse cx="1080" cy="150" rx="120" ry="70" />
-            <ellipse cx="1010" cy="100" rx="95" ry="60" />
-            <ellipse cx="880" cy="160" rx="85" ry="50" />
-          </g>
-          {/* Mid-right blue cloud */}
-          <g fill="oklch(0.94 0.05 250 / 42%)">
-            <ellipse cx="940" cy="440" rx="160" ry="85" />
-            <ellipse cx="1080" cy="420" rx="130" ry="80" />
-            <ellipse cx="1000" cy="380" rx="110" ry="65" />
-          </g>
-          {/* Bottom-left blush cloud */}
-          <g fill="oklch(0.94 0.05 14.81 / 38%)">
-            <ellipse cx="160" cy="720" rx="150" ry="80" />
-            <ellipse cx="300" cy="700" rx="130" ry="75" />
-            <ellipse cx="230" cy="660" rx="100" ry="60" />
-            <ellipse cx="60" cy="740" rx="90" ry="55" />
-          </g>
-        </g>
-      </svg>
-    </div>
-  );
-}
-
 function Header({ progress }: { progress: number }) {
   const circumference = 2 * Math.PI * 18;
   const offset = circumference - (progress / 100) * circumference;
 
   return (
-    <header className="mx-auto flex max-w-5xl items-center justify-between px-6 py-7">
+    <header className="relative mx-auto flex max-w-5xl items-center justify-between px-6 py-7">
       <div className="flex items-baseline gap-2">
         <span className="font-display text-2xl font-semibold tracking-tight text-ink">
           Stilla
@@ -345,7 +306,7 @@ function CompletionCard({
           </div>
           <div className="text-center">
             <p className="font-display text-2xl font-semibold text-ink">{learningCount}</p>
-            <p className="text-xs text-mist">Still learning</p>
+            <p className="text-xs text-mist">Needed practice</p>
           </div>
         </div>
         <button

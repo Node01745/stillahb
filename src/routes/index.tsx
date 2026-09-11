@@ -17,7 +17,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  const [selectedLevelId, setSelectedLevelId] = useState<string>(levels[1].id);
+  const [selectedLevelId, setSelectedLevelId] = useState<string>(levels[1]?.id ?? levels[0].id);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [knownIds, setKnownIds] = useState<Set<string>>(new Set());

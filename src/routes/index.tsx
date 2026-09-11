@@ -96,7 +96,6 @@ function Index() {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-frost font-body text-ink antialiased">
-      <CloudBackground />
       <Header progress={progress} />
 
       <main className="relative mx-auto max-w-5xl px-6 pb-24">
@@ -149,64 +148,12 @@ function Index() {
   );
 }
 
-function CloudBackground() {
-  return (
-    <div
-      className="pointer-events-none absolute inset-0 -z-10"
-      aria-hidden="true"
-    >
-      <svg
-        viewBox="0 0 1200 900"
-        preserveAspectRatio="xMidYMid slice"
-        className="absolute inset-0 h-full w-full"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <defs>
-          <filter id="cloud-glow" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="22" result="blur" />
-            <feComposite in="SourceGraphic" in2="blur" operator="over" />
-          </filter>
-        </defs>
-        <g filter="url(#cloud-glow)" opacity="1">
-          {/* Top-left blue cloud */}
-          <g fill="oklch(0.94 0.06 250 / 50%)">
-            <ellipse cx="220" cy="160" rx="150" ry="80" />
-            <ellipse cx="360" cy="150" rx="130" ry="75" />
-            <ellipse cx="290" cy="110" rx="100" ry="60" />
-            <ellipse cx="130" cy="190" rx="90" ry="55" />
-          </g>
-          {/* Top-right blush cloud */}
-          <g fill="oklch(0.94 0.055 14.81 / 45%)">
-            <ellipse cx="960" cy="130" rx="140" ry="75" />
-            <ellipse cx="1080" cy="150" rx="120" ry="70" />
-            <ellipse cx="1010" cy="100" rx="95" ry="60" />
-            <ellipse cx="880" cy="160" rx="85" ry="50" />
-          </g>
-          {/* Mid-right blue cloud */}
-          <g fill="oklch(0.94 0.05 250 / 42%)">
-            <ellipse cx="940" cy="440" rx="160" ry="85" />
-            <ellipse cx="1080" cy="420" rx="130" ry="80" />
-            <ellipse cx="1000" cy="380" rx="110" ry="65" />
-          </g>
-          {/* Bottom-left blush cloud */}
-          <g fill="oklch(0.94 0.05 14.81 / 38%)">
-            <ellipse cx="160" cy="720" rx="150" ry="80" />
-            <ellipse cx="300" cy="700" rx="130" ry="75" />
-            <ellipse cx="230" cy="660" rx="100" ry="60" />
-            <ellipse cx="60" cy="740" rx="90" ry="55" />
-          </g>
-        </g>
-      </svg>
-    </div>
-  );
-}
-
 function Header({ progress }: { progress: number }) {
   const circumference = 2 * Math.PI * 18;
   const offset = circumference - (progress / 100) * circumference;
 
   return (
-    <header className="mx-auto flex max-w-5xl items-center justify-between px-6 py-7">
+    <header className="relative mx-auto flex max-w-5xl items-center justify-between px-6 py-7">
       <div className="flex items-baseline gap-2">
         <span className="font-display text-2xl font-semibold tracking-tight text-ink">
           Stilla

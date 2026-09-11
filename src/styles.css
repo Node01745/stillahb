@@ -75,7 +75,7 @@
   --radius: 0.625rem;
 
   /* Pastel light theme — calm watercolor ritual */
-  --background: oklch(0.967 0.008 245);
+  --background: oklch(0.945 0.035 240);
   --foreground: oklch(0.402 0.0212 267.62);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.402 0.0212 267.62);
@@ -83,38 +83,38 @@
   --popover-foreground: oklch(0.402 0.0212 267.62);
   --primary: oklch(0.726 0.1202 4.90);
   --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.947 0.0514 14.81);
+  --secondary: oklch(0.955 0.06 14.81);
   --secondary-foreground: oklch(0.402 0.0212 267.62);
-  --muted: oklch(0.967 0.008 245);
+  --muted: oklch(0.945 0.035 240);
   --muted-foreground: oklch(0.715 0.0284 273.01);
-  --accent: oklch(0.947 0.0514 14.81);
+  --accent: oklch(0.955 0.06 14.81);
   --accent-foreground: oklch(0.402 0.0212 267.62);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.984 0.003 247.858);
   --border: oklch(0.402 0.0212 267.62 / 5%);
   --input: oklch(0.402 0.0212 267.62 / 5%);
-  --ring: oklch(0.829 0.0324 269.95);
+  --ring: oklch(0.76 0.09 250);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.967 0.008 245);
+  --sidebar: oklch(0.945 0.035 240);
   --sidebar-foreground: oklch(0.402 0.0212 267.62);
   --sidebar-primary: oklch(0.726 0.1202 4.90);
   --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.947 0.0514 14.81);
+  --sidebar-accent: oklch(0.955 0.06 14.81);
   --sidebar-accent-foreground: oklch(0.402 0.0212 267.62);
   --sidebar-border: oklch(0.402 0.0212 267.62 / 5%);
-  --sidebar-ring: oklch(0.829 0.0324 269.95);
+  --sidebar-ring: oklch(0.76 0.09 250);
 
   /* Named pastel tokens */
-  --frost: oklch(0.967 0.008 245);
-  --blush: oklch(0.947 0.0514 14.81);
+  --frost: oklch(0.945 0.035 240);
+  --blush: oklch(0.955 0.06 14.81);
   --ink: oklch(0.402 0.0212 267.62);
   --mist: oklch(0.715 0.0284 273.01);
   --rose: oklch(0.726 0.1202 4.90);
-  --sky: oklch(0.829 0.0324 269.95);
+  --sky: oklch(0.76 0.09 250);
 }
 
 .dark {

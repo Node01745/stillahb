@@ -306,7 +306,7 @@ function CompletionCard({
           </div>
           <div className="text-center">
             <p className="font-display text-2xl font-semibold text-ink">{learningCount}</p>
-            <p className="text-xs text-mist">Still learning</p>
+            <p className="text-xs text-mist">Needed practice</p>
           </div>
         </div>
         <button

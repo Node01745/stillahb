@@ -119,7 +119,7 @@ function Index() {
               {level.name} · Dagens kort
             </p>
             <h1 className="mt-1 max-w-[30ch] font-display text-3xl font-semibold leading-tight tracking-tight text-ink">
-              Take a slow breath. One small deck at a time.
+              One small deck at a time.
             </h1>
 
             {sessionComplete ? (

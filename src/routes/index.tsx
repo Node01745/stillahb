@@ -129,7 +129,7 @@ function Index() {
                 learningCount={learningCount}
                 onRestart={handleRestart}
               />
-            ) : (
+            ) : currentCard ? (
               <StudyCard
                 card={currentCard}
                 currentIndex={knownCount}
@@ -139,7 +139,7 @@ function Index() {
                 onFlip={handleFlip}
                 onNext={handleNext}
               />
-            )}
+            ) : null}
           </div>
 
           <LevelSelector

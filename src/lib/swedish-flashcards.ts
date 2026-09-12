@@ -10,7 +10,7 @@ export const levels: Level[] = [
     id: "beginner",
     name: "Beginner",
     description: "Essential greetings & everyday words",
-    duration: "10 min",
+    duration: "20 cards",
     cards: beginnerCards,
   },
   {

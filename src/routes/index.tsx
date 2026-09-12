@@ -6,9 +6,9 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Stilla — calm Swedish flashcards" },
-      { name: "description", content: "A gentle ten-minute daily ritual for learning Swedish, one flashcard at a time." },
+      { name: "description", content: "A gentle daily ritual for learning Swedish: one small deck of 20 flashcards at a time." },
       { property: "og:title", content: "Stilla — calm Swedish flashcards" },
-      { property: "og:description", content: "A gentle ten-minute daily ritual for learning Swedish, one flashcard at a time." },
+      { property: "og:description", content: "A gentle daily ritual for learning Swedish: one small deck of 20 flashcards at a time." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -16,7 +16,7 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-const SESSION_SECONDS = 10 * 60;
+const SESSION_SIZE = 20;
 
 function shuffle<T>(items: T[]): T[] {
   const arr = [...items];
@@ -36,7 +36,6 @@ function Index() {
   const [isFlipped, setIsFlipped] = useState(false);
   const [knownCount, setKnownCount] = useState(0);
   const [reviewedCount, setReviewedCount] = useState(0);
-  const [secondsLeft, setSecondsLeft] = useState(SESSION_SECONDS);
   const knownIdsRef = useRef<Set<string>>(new Set());
 
   const level = useMemo(
@@ -44,27 +43,14 @@ function Index() {
     [selectedLevelId]
   );
 
-  // Countdown: ends the session at zero.
-  useEffect(() => {
-    if (sessionState !== "running") return;
-    if (secondsLeft <= 0) {
-      setSessionState("finished");
-      setIsFlipped(false);
-      return;
-    }
-    const t = setTimeout(() => setSecondsLeft((s) => s - 1), 1000);
-    return () => clearTimeout(t);
-  }, [sessionState, secondsLeft]);
-
   const currentCard = queue[0];
-  const progress = Math.round(((SESSION_SECONDS - secondsLeft) / SESSION_SECONDS) * 100);
+  const progress = (knownCount / SESSION_SIZE) * 100;
 
   const startSession = () => {
     knownIdsRef.current = new Set();
-    setQueue(shuffle(level.cards));
+    setQueue(shuffle(level.cards).slice(0, SESSION_SIZE));
     setKnownCount(0);
     setReviewedCount(0);
-    setSecondsLeft(SESSION_SECONDS);
     setIsFlipped(false);
     setSessionState("running");
   };
@@ -75,7 +61,6 @@ function Index() {
     setSessionState("idle");
     setQueue([]);
     setIsFlipped(false);
-    setSecondsLeft(SESSION_SECONDS);
   };
 
   const handleFlip = () => setIsFlipped((prev) => !prev);
@@ -89,13 +74,13 @@ function Index() {
         knownIdsRef.current.add(currentCard.id);
         setKnownCount(knownIdsRef.current.size);
       }
-      setQueue((prev) => {
-        const rest = prev.slice(1);
-        // Deck cleared with time left? Reshuffle everything and keep going.
-        return rest.length > 0 ? rest : shuffle(level.cards);
-      });
+      setQueue((prev) => prev.slice(1));
+      if (queue.length <= 1) {
+        setSessionState("finished");
+        setIsFlipped(false);
+      }
     } else {
-      // "Still learning" cards go back into the deck until known.
+      // "Still learning" cards go to the back until they're known.
       setQueue((prev) => [...prev.slice(1), currentCard]);
     }
     setIsFlipped(false);
@@ -122,7 +107,7 @@ function Index() {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-frost font-body text-ink antialiased">
-      <Header progress={progress} secondsLeft={secondsLeft} running={sessionState === "running"} />
+      <Header progress={progress} running={sessionState === "running"} />
 
       <main className="relative mx-auto max-w-5xl px-6 pb-24">
         <section className="grid grid-cols-1 gap-10 md:grid-cols-12 md:items-center">
@@ -137,7 +122,6 @@ function Index() {
             {sessionState === "finished" ? (
               <CompletionCard
                 level={level}
-                knownCount={knownCount}
                 reviewedCount={reviewedCount}
                 onRestart={startSession}
               />
@@ -145,8 +129,7 @@ function Index() {
               <StudyCard
                 card={currentCard}
                 knownCount={knownCount}
-                totalCards={level.cards.length}
-                secondsLeft={secondsLeft}
+                totalCards={SESSION_SIZE}
                 isFlipped={isFlipped}
                 onFlip={handleFlip}
                 onNext={handleNext}
@@ -168,7 +151,7 @@ function Index() {
             A short, unhurried practice. Come back tomorrow.
           </span>
           <span className="text-xs text-mist/70">
-            Stilla · a ten-minute Swedish ritual
+            Stilla · a small Swedish ritual
           </span>
         </section>
       </main>
@@ -176,13 +159,7 @@ function Index() {
   );
 }
 
-function formatTime(totalSeconds: number) {
-  const m = Math.floor(totalSeconds / 60);
-  const s = totalSeconds % 60;
-  return `${m}:${s.toString().padStart(2, "0")}`;
-}
-
-function Header({ progress, secondsLeft, running }: { progress: number; secondsLeft: number; running: boolean }) {
+function Header({ progress, running }: { progress: number; running: boolean }) {
   const circumference = 2 * Math.PI * 18;
   const offset = circumference - (progress / 100) * circumference;
 
@@ -196,7 +173,7 @@ function Header({ progress, secondsLeft, running }: { progress: number; secondsL
       </div>
       <div className="flex items-center gap-3">
         <span className="hidden text-sm text-mist sm:inline">
-          {running ? formatTime(secondsLeft) : "Today"}
+          {running ? "In progress" : "Today"}
         </span>
         <div className="relative grid size-12 place-items-center">
           <svg viewBox="0 0 44 44" className="size-12 -rotate-90" aria-hidden="true">
@@ -218,10 +195,10 @@ function Header({ progress, secondsLeft, running }: { progress: number; secondsL
               strokeLinecap="round"
               strokeDasharray={circumference}
               strokeDashoffset={offset}
-              className="transition-all duration-1000"
+              className="transition-all duration-500"
             />
           </svg>
-          <span className="absolute text-xs font-medium text-ink">{running ? formatTime(secondsLeft) : "10:00"}</span>
+          <span className="absolute text-xs font-medium text-ink">{Math.round(progress)}%</span>
         </div>
       </div>
     </header>
@@ -232,17 +209,17 @@ function StartCard({ level, onStart }: { level: Level; onStart: () => void }) {
   return (
     <div className="mx-auto mt-9 w-full max-w-sm">
       <div className="rounded-3xl bg-white ring-1 ring-black/5 p-8 text-center">
-        <p className="text-xs font-medium uppercase tracking-[0.2em] text-rose">Ten minutes</p>
+        <p className="text-xs font-medium uppercase tracking-[0.2em] text-rose">Twenty cards</p>
         <p className="mt-3 font-display text-3xl font-medium text-ink">Redo när du är redo.</p>
         <p className="mt-4 text-sm text-ink/70">
-          {level.cards.length} {level.name.toLowerCase()} cards, shuffled. Cards you don't know keep coming back until the timer ends.
+          20 cards, shuffled from {level.cards.length} {level.name.toLowerCase()} words and phrases. Cards you don't know keep coming back until you know them.
         </p>
         <button
           type="button"
           onClick={onStart}
           className="mt-8 inline-flex items-center gap-2 rounded-full bg-rose px-6 py-2.5 text-sm font-medium text-white ring-2 ring-rose/30 transition hover:bg-rose/90"
         >
-          Start 10 minutes
+          Start the deck
         </button>
       </div>
     </div>
@@ -253,7 +230,6 @@ function StudyCard({
   card,
   knownCount,
   totalCards,
-  secondsLeft,
   isFlipped,
   onFlip,
   onNext,
@@ -261,7 +237,6 @@ function StudyCard({
   card: Flashcard;
   knownCount: number;
   totalCards: number;
-  secondsLeft: number;
   isFlipped: boolean;
   onFlip: () => void;
   onNext: (known: boolean) => void;
@@ -314,7 +289,7 @@ function StudyCard({
         </button>
       </div>
       <p className="mt-4 text-center text-sm text-mist">
-        {formatTime(secondsLeft)} left · {knownCount} of {totalCards} known
+        {knownCount} of {totalCards} known
       </p>
     </div>
   );
@@ -322,31 +297,30 @@ function StudyCard({
 
 function CompletionCard({
   level,
-  knownCount,
   reviewedCount,
   onRestart,
 }: {
   level: Level;
-  knownCount: number;
   reviewedCount: number;
   onRestart: () => void;
 }) {
+  const practiceCount = Math.max(0, reviewedCount - SESSION_SIZE);
   return (
     <div className="mx-auto mt-9 w-full max-w-sm">
       <div className="rounded-3xl bg-white ring-1 ring-black/5 p-8 text-center">
-        <p className="text-xs font-medium uppercase tracking-[0.2em] text-rose">Time's up</p>
+        <p className="text-xs font-medium uppercase tracking-[0.2em] text-rose">Deck done</p>
         <p className="mt-3 font-display text-3xl font-medium text-ink">Bra jobbat.</p>
         <p className="mt-4 text-sm text-ink/70">
-          Ten calm minutes with the {level.name.toLowerCase()} deck.
+          All twenty {level.name.toLowerCase()} cards, known and done.
         </p>
         <div className="mt-6 flex justify-center gap-8">
           <div className="text-center">
-            <p className="font-display text-2xl font-semibold text-ink">{knownCount}</p>
+            <p className="font-display text-2xl font-semibold text-ink">{SESSION_SIZE}</p>
             <p className="text-xs text-mist">Known</p>
           </div>
           <div className="text-center">
-            <p className="font-display text-2xl font-semibold text-ink">{reviewedCount}</p>
-            <p className="text-xs text-mist">Cards seen</p>
+            <p className="font-display text-2xl font-semibold text-ink">{practiceCount}</p>
+            <p className="text-xs text-mist">Needed practice</p>
           </div>
         </div>
         <button

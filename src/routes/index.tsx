@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { levels, type Level, type Flashcard } from "../lib/swedish-flashcards";
 
 export const Route = createFileRoute("/")({
@@ -16,82 +16,95 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-function Index() {
-  const SESSION_SIZE = 20;
+const SESSION_SECONDS = 10 * 60;
 
+function shuffle<T>(items: T[]): T[] {
+  const arr = [...items];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j]!, arr[i]!];
+  }
+  return arr;
+}
+
+type SessionState = "idle" | "running" | "finished";
+
+function Index() {
   const [selectedLevelId, setSelectedLevelId] = useState<string>(levels[1]?.id ?? levels[0]!.id);
-  const [sessionSeed, setSessionSeed] = useState(0);
+  const [sessionState, setSessionState] = useState<SessionState>("idle");
   const [queue, setQueue] = useState<Flashcard[]>([]);
   const [isFlipped, setIsFlipped] = useState(false);
-  const [knownIds, setKnownIds] = useState<Set<string>>(new Set());
-  const [learningIds, setLearningIds] = useState<Set<string>>(new Set());
-  const [sessionComplete, setSessionComplete] = useState(false);
+  const [knownCount, setKnownCount] = useState(0);
+  const [reviewedCount, setReviewedCount] = useState(0);
+  const [secondsLeft, setSecondsLeft] = useState(SESSION_SECONDS);
+  const knownIdsRef = useRef<Set<string>>(new Set());
 
   const level = useMemo(
     () => (levels.find((l) => l.id === selectedLevelId) ?? levels[0]) as Level,
     [selectedLevelId]
   );
 
-  // Build a fresh shuffled session of 20 cards whenever the level or session changes.
+  // Countdown: ends the session at zero.
   useEffect(() => {
-    const shuffled = [...level.cards];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j]!, shuffled[i]!];
+    if (sessionState !== "running") return;
+    if (secondsLeft <= 0) {
+      setSessionState("finished");
+      setIsFlipped(false);
+      return;
     }
-    setQueue(shuffled.slice(0, SESSION_SIZE));
-    setIsFlipped(false);
-    setKnownIds(new Set());
-    setLearningIds(new Set());
-    setSessionComplete(false);
-  }, [level, sessionSeed]);
+    const t = setTimeout(() => setSecondsLeft((s) => s - 1), 1000);
+    return () => clearTimeout(t);
+  }, [sessionState, secondsLeft]);
 
-  const totalCards = Math.min(SESSION_SIZE, level.cards.length);
   const currentCard = queue[0];
-  const progress = Math.round((knownIds.size / totalCards) * 100);
-  const knownCount = knownIds.size;
-  const learningCount = learningIds.size;
+  const progress = Math.round(((SESSION_SECONDS - secondsLeft) / SESSION_SECONDS) * 100);
 
-  const resetSession = (levelId: string) => {
-    setSelectedLevelId(levelId);
-    setSessionSeed((prev) => prev + 1);
+  const startSession = () => {
+    knownIdsRef.current = new Set();
+    setQueue(shuffle(level.cards));
+    setKnownCount(0);
+    setReviewedCount(0);
+    setSecondsLeft(SESSION_SECONDS);
+    setIsFlipped(false);
+    setSessionState("running");
   };
 
   const handleLevelChange = (levelId: string) => {
     if (levelId === selectedLevelId) return;
-    resetSession(levelId);
+    setSelectedLevelId(levelId);
+    setSessionState("idle");
+    setQueue([]);
+    setIsFlipped(false);
+    setSecondsLeft(SESSION_SECONDS);
   };
 
-  const handleFlip = () => {
-    setIsFlipped((prev) => !prev);
-  };
+  const handleFlip = () => setIsFlipped((prev) => !prev);
 
   const handleNext = (known: boolean) => {
-    if (!currentCard) return;
+    if (!currentCard || sessionState !== "running") return;
+    setReviewedCount((c) => c + 1);
 
     if (known) {
-      const newKnown = new Set([...knownIds, currentCard.id]);
-      setKnownIds(newKnown);
-      setQueue((prev) => prev.slice(1));
-      if (newKnown.size >= totalCards) {
-        setSessionComplete(true);
+      if (!knownIdsRef.current.has(currentCard.id)) {
+        knownIdsRef.current.add(currentCard.id);
+        setKnownCount(knownIdsRef.current.size);
       }
+      setQueue((prev) => {
+        const rest = prev.slice(1);
+        // Deck cleared with time left? Reshuffle everything and keep going.
+        return rest.length > 0 ? rest : shuffle(level.cards);
+      });
     } else {
-      setLearningIds((prev) => new Set([...prev, currentCard.id]));
-      // "Still learning" cards go back to the end of the deck until known.
+      // "Still learning" cards go back into the deck until known.
       setQueue((prev) => [...prev.slice(1), currentCard]);
     }
     setIsFlipped(false);
   };
 
-  const handleRestart = () => {
-    resetSession(selectedLevelId);
-  };
-
-  // Keyboard shortcuts: space to flip, left arrow = still learning, right arrow = I know it.
+  // Keyboard shortcuts: space to flip, left = still learning, right = I know it.
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      if (sessionComplete) return;
+      if (sessionState !== "running") return;
       if (e.code === "Space") {
         e.preventDefault();
         handleFlip();
@@ -103,14 +116,13 @@ function Index() {
         handleNext(true);
       }
     };
-
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [sessionComplete, currentCard, knownIds, totalCards]);
+  }, [sessionState, currentCard, level]);
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-frost font-body text-ink antialiased">
-      <Header progress={progress} />
+      <Header progress={progress} secondsLeft={secondsLeft} running={sessionState === "running"} />
 
       <main className="relative mx-auto max-w-5xl px-6 pb-24">
         <section className="grid grid-cols-1 gap-10 md:grid-cols-12 md:items-center">
@@ -122,24 +134,26 @@ function Index() {
               One small deck at a time.
             </h1>
 
-            {sessionComplete ? (
+            {sessionState === "finished" ? (
               <CompletionCard
                 level={level}
                 knownCount={knownCount}
-                learningCount={learningCount}
-                onRestart={handleRestart}
+                reviewedCount={reviewedCount}
+                onRestart={startSession}
               />
-            ) : currentCard ? (
+            ) : sessionState === "running" && currentCard ? (
               <StudyCard
                 card={currentCard}
-                currentIndex={knownCount}
-                totalCards={totalCards}
-                levelDuration={level.duration}
+                knownCount={knownCount}
+                totalCards={level.cards.length}
+                secondsLeft={secondsLeft}
                 isFlipped={isFlipped}
                 onFlip={handleFlip}
                 onNext={handleNext}
               />
-            ) : null}
+            ) : (
+              <StartCard level={level} onStart={startSession} />
+            )}
           </div>
 
           <LevelSelector
@@ -162,7 +176,13 @@ function Index() {
   );
 }
 
-function Header({ progress }: { progress: number }) {
+function formatTime(totalSeconds: number) {
+  const m = Math.floor(totalSeconds / 60);
+  const s = totalSeconds % 60;
+  return `${m}:${s.toString().padStart(2, "0")}`;
+}
+
+function Header({ progress, secondsLeft, running }: { progress: number; secondsLeft: number; running: boolean }) {
   const circumference = 2 * Math.PI * 18;
   const offset = circumference - (progress / 100) * circumference;
 
@@ -175,7 +195,9 @@ function Header({ progress }: { progress: number }) {
         <span className="text-sm text-mist">· calmly, in Swedish</span>
       </div>
       <div className="flex items-center gap-3">
-        <span className="hidden text-sm text-mist sm:inline">Today</span>
+        <span className="hidden text-sm text-mist sm:inline">
+          {running ? formatTime(secondsLeft) : "Today"}
+        </span>
         <div className="relative grid size-12 place-items-center">
           <svg viewBox="0 0 44 44" className="size-12 -rotate-90" aria-hidden="true">
             <circle
@@ -196,36 +218,54 @@ function Header({ progress }: { progress: number }) {
               strokeLinecap="round"
               strokeDasharray={circumference}
               strokeDashoffset={offset}
-              className="transition-all duration-500"
+              className="transition-all duration-1000"
             />
           </svg>
-          <span className="absolute text-xs font-medium text-ink">{progress}%</span>
+          <span className="absolute text-xs font-medium text-ink">{running ? formatTime(secondsLeft) : "10:00"}</span>
         </div>
       </div>
     </header>
   );
 }
 
+function StartCard({ level, onStart }: { level: Level; onStart: () => void }) {
+  return (
+    <div className="mx-auto mt-9 w-full max-w-sm">
+      <div className="rounded-3xl bg-white ring-1 ring-black/5 p-8 text-center">
+        <p className="text-xs font-medium uppercase tracking-[0.2em] text-rose">Ten minutes</p>
+        <p className="mt-3 font-display text-3xl font-medium text-ink">Redo när du är redo.</p>
+        <p className="mt-4 text-sm text-ink/70">
+          {level.cards.length} {level.name.toLowerCase()} cards, shuffled. Cards you don't know keep coming back until the timer ends.
+        </p>
+        <button
+          type="button"
+          onClick={onStart}
+          className="mt-8 inline-flex items-center gap-2 rounded-full bg-rose px-6 py-2.5 text-sm font-medium text-white ring-2 ring-rose/30 transition hover:bg-rose/90"
+        >
+          Start 10 minutes
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function StudyCard({
   card,
-  currentIndex,
+  knownCount,
   totalCards,
-  levelDuration,
+  secondsLeft,
   isFlipped,
   onFlip,
   onNext,
 }: {
   card: Flashcard;
-  currentIndex: number;
+  knownCount: number;
   totalCards: number;
-  levelDuration: string;
+  secondsLeft: number;
   isFlipped: boolean;
   onFlip: () => void;
   onNext: (known: boolean) => void;
 }) {
-  const remaining = totalCards - currentIndex;
-  const estimatedMinutes = Math.max(1, Math.round((remaining / totalCards) * parseInt(levelDuration)));
-
   return (
     <div className="mx-auto mt-9 w-full max-w-sm">
       <button
@@ -274,7 +314,7 @@ function StudyCard({
         </button>
       </div>
       <p className="mt-4 text-center text-sm text-mist">
-        Card {currentIndex + 1} of {totalCards} · about {estimatedMinutes} min left
+        {formatTime(secondsLeft)} left · {knownCount} of {totalCards} known
       </p>
     </div>
   );
@@ -283,21 +323,21 @@ function StudyCard({
 function CompletionCard({
   level,
   knownCount,
-  learningCount,
+  reviewedCount,
   onRestart,
 }: {
   level: Level;
   knownCount: number;
-  learningCount: number;
+  reviewedCount: number;
   onRestart: () => void;
 }) {
   return (
     <div className="mx-auto mt-9 w-full max-w-sm">
       <div className="rounded-3xl bg-white ring-1 ring-black/5 p-8 text-center">
-        <p className="text-xs font-medium uppercase tracking-[0.2em] text-rose">Session complete</p>
+        <p className="text-xs font-medium uppercase tracking-[0.2em] text-rose">Time's up</p>
         <p className="mt-3 font-display text-3xl font-medium text-ink">Bra jobbat.</p>
         <p className="mt-4 text-sm text-ink/70">
-          You finished the {level.name.toLowerCase()} deck.
+          Ten calm minutes with the {level.name.toLowerCase()} deck.
         </p>
         <div className="mt-6 flex justify-center gap-8">
           <div className="text-center">
@@ -305,8 +345,8 @@ function CompletionCard({
             <p className="text-xs text-mist">Known</p>
           </div>
           <div className="text-center">
-            <p className="font-display text-2xl font-semibold text-ink">{learningCount}</p>
-            <p className="text-xs text-mist">Needed practice</p>
+            <p className="font-display text-2xl font-semibold text-ink">{reviewedCount}</p>
+            <p className="text-xs text-mist">Cards seen</p>
           </div>
         </div>
         <button
@@ -314,7 +354,7 @@ function CompletionCard({
           onClick={onRestart}
           className="mt-8 inline-flex items-center gap-2 rounded-full bg-rose px-6 py-2.5 text-sm font-medium text-white ring-2 ring-rose/30 transition hover:bg-rose/90"
         >
-          Practice again
+          Go again
         </button>
       </div>
     </div>
@@ -351,7 +391,7 @@ function LevelSelector({
                 <span className="font-display text-lg font-medium text-ink">{level.name}</span>
                 {isSelected ? (
                   <span className="inline-flex items-center gap-1 text-xs font-medium text-sky">
-                    <span className="size-1.5 rounded-full bg-sky"></span> In session
+                    <span className="size-1.5 rounded-full bg-sky"></span> Selected
                   </span>
                 ) : (
                   <span className="text-xs text-mist">{level.duration}</span>

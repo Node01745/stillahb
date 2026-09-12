@@ -17,14 +17,14 @@ export const levels: Level[] = [
     id: "intermediate",
     name: "Intermediate",
     description: "Everyday verbs, phrases & small talk",
-    duration: "10 min",
+    duration: "20 cards",
     cards: intermediateCards,
   },
   {
     id: "advanced",
     name: "Advanced",
     description: "Idioms, nuance & natural flow",
-    duration: "10 min",
+    duration: "20 cards",
     cards: advancedCards,
   },
 ];

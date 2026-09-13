@@ -133,11 +133,11 @@ function Index() {
               One small deck at a time.
             </h1>
 
-            {sessionState === "finished" ? (
+          {sessionState === "finished" ? (
               <CompletionCard
                 level={level}
                 reviewedCount={reviewedCount}
-                onRestart={startSession}
+                onRestart={() => startSession(true)}
               />
             ) : sessionState === "running" && currentCard ? (
               <StudyCard
@@ -149,7 +149,7 @@ function Index() {
                 onNext={handleNext}
               />
             ) : (
-              <StartCard level={level} onStart={startSession} />
+              <StartCard level={level} onStart={() => startSession(true)} />
             )}
           </div>
 

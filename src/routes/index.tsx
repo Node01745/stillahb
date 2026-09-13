@@ -146,6 +146,8 @@ function Index() {
           />
         </section>
 
+        <WordOfTheDay />
+
         <section className="mt-16 flex flex-col items-center gap-3 text-center">
           <span className="text-sm text-mist">
             A short, unhurried practice. Come back tomorrow.

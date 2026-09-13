@@ -163,13 +163,27 @@ function Header({ progress, running }: { progress: number; running: boolean }) {
   const circumference = 2 * Math.PI * 18;
   const offset = circumference - (progress / 100) * circumference;
 
+  const todaysDate = useMemo(() => {
+    const raw = new Date().toLocaleDateString("sv-SE", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+    });
+    return raw.charAt(0).toUpperCase() + raw.slice(1);
+  }, []);
+
   return (
     <header className="relative mx-auto flex max-w-5xl items-center justify-between px-6 py-7">
-      <div className="flex items-baseline gap-2">
-        <span className="font-display text-2xl font-semibold tracking-tight text-ink">
-          Stilla
-        </span>
-        <span className="text-sm text-mist">· calmly, in Swedish</span>
+      <div>
+        <div className="flex items-baseline gap-2">
+          <span className="font-display text-2xl font-semibold tracking-tight text-ink">
+            Stilla
+          </span>
+          <span className="text-sm text-mist">· calmly, in Swedish</span>
+        </div>
+        <p className="mt-0.5 text-xs font-medium uppercase tracking-[0.18em] text-mist">
+          {todaysDate}
+        </p>
       </div>
       <div className="flex items-center gap-3">
         <span className="hidden text-sm text-mist sm:inline">
@@ -208,19 +222,36 @@ function Header({ progress, running }: { progress: number; running: boolean }) {
 function StartCard({ level, onStart }: { level: Level; onStart: () => void }) {
   return (
     <div className="mx-auto mt-9 w-full max-w-sm">
-      <div className="rounded-3xl bg-white ring-1 ring-black/5 p-8 text-center">
-        <p className="text-xs font-medium uppercase tracking-[0.2em] text-rose">Twenty cards</p>
-        <p className="mt-3 font-display text-3xl font-medium text-ink">Redo när du är redo.</p>
-        <p className="mt-4 text-sm text-ink/70">
-          20 cards, shuffled from {level.cards.length} {level.name.toLowerCase()} words and phrases. Cards you don't know keep coming back until you know them.
-        </p>
-        <button
-          type="button"
-          onClick={onStart}
-          className="mt-8 inline-flex items-center gap-2 rounded-full bg-rose px-6 py-2.5 text-sm font-medium text-white ring-2 ring-rose/30 transition hover:bg-rose/90"
-        >
-          Start the deck
-        </button>
+      <div className="relative">
+        {/* Tilted card stacked behind, like a deck waiting to be used */}
+        <div
+          className="absolute inset-0 rotate-3 scale-[1.02] translate-y-2 rounded-3xl bg-white/50"
+          aria-hidden="true"
+        />
+        {/* Small floating pastel shapes */}
+        <div
+          className="animate-breathe absolute -top-5 -right-5 size-12 rounded-2xl bg-sky/25 blur-[1px]"
+          aria-hidden="true"
+        />
+        <div
+          className="animate-float-slow absolute bottom-10 -left-6 size-8 rounded-full bg-blush/60 blur-[1px]"
+          aria-hidden="true"
+        />
+        <div className="animate-float-soft relative rounded-3xl bg-white ring-1 ring-black/5 p-8 text-center">
+          <p className="text-xs font-medium uppercase tracking-[0.2em] text-rose">Twenty cards</p>
+          <p className="mt-3 font-display text-3xl font-medium text-ink">Redo när du är redo.</p>
+          <p className="mt-4 text-sm text-ink/70">
+            20 cards, shuffled from {level.cards.length} {level.name.toLowerCase()} words and
+            phrases. Cards you don't know keep coming back until you know them.
+          </p>
+          <button
+            type="button"
+            onClick={onStart}
+            className="mt-8 inline-flex items-center gap-2 rounded-full bg-rose px-6 py-2.5 text-sm font-medium text-white ring-2 ring-rose/30 transition hover:bg-rose/90 hover:-translate-y-0.5"
+          >
+            Start the deck
+          </button>
+        </div>
       </div>
     </div>
   );

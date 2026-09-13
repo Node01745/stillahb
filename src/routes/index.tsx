@@ -163,13 +163,27 @@ function Header({ progress, running }: { progress: number; running: boolean }) {
   const circumference = 2 * Math.PI * 18;
   const offset = circumference - (progress / 100) * circumference;
 
+  const todaysDate = useMemo(() => {
+    const raw = new Date().toLocaleDateString("sv-SE", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+    });
+    return raw.charAt(0).toUpperCase() + raw.slice(1);
+  }, []);
+
   return (
     <header className="relative mx-auto flex max-w-5xl items-center justify-between px-6 py-7">
-      <div className="flex items-baseline gap-2">
-        <span className="font-display text-2xl font-semibold tracking-tight text-ink">
-          Stilla
-        </span>
-        <span className="text-sm text-mist">· calmly, in Swedish</span>
+      <div>
+        <div className="flex items-baseline gap-2">
+          <span className="font-display text-2xl font-semibold tracking-tight text-ink">
+            Stilla
+          </span>
+          <span className="text-sm text-mist">· calmly, in Swedish</span>
+        </div>
+        <p className="mt-0.5 text-xs font-medium uppercase tracking-[0.18em] text-mist">
+          {todaysDate}
+        </p>
       </div>
       <div className="flex items-center gap-3">
         <span className="hidden text-sm text-mist sm:inline">

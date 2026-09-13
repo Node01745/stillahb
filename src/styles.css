@@ -191,3 +191,46 @@
 .face-back {
   transform: rotateY(180deg);
 }
+
+/* Gentle ambient motion for the idle main page */
+@keyframes gentle-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes soft-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.85;
+  }
+  50% {
+    transform: scale(1.06);
+    opacity: 1;
+  }
+}
+
+.animate-float-soft {
+  animation: gentle-float 6s ease-in-out infinite;
+}
+
+.animate-float-slow {
+  animation: gentle-float 9s ease-in-out infinite;
+}
+
+.animate-breathe {
+  animation: soft-breathe 5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-float-soft,
+  .animate-float-slow,
+  .animate-breathe {
+    animation: none;
+  }
+}

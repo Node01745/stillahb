@@ -407,8 +407,9 @@ function CompletionCard({
           onClick={onRestart}
           className="mt-8 inline-flex items-center gap-2 rounded-full bg-rose px-6 py-2.5 text-sm font-medium text-white ring-2 ring-rose/30 transition hover:bg-rose/90"
         >
-          Go again
+          Go again — 20 new cards
         </button>
+        <p className="mt-3 text-xs text-mist/80">Fresh words you haven't seen yet.</p>
       </div>
     </div>
   );

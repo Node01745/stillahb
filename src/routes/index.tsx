@@ -37,6 +37,8 @@ function Index() {
   const [knownCount, setKnownCount] = useState(0);
   const [reviewedCount, setReviewedCount] = useState(0);
   const knownIdsRef = useRef<Set<string>>(new Set());
+  // Cards already dealt this level, so "go again" can deal unseen words.
+  const usedIdsRef = useRef<Map<string, Set<string>>>(new Map());
 
   const level = useMemo(
     () => (levels.find((l) => l.id === selectedLevelId) ?? levels[0]) as Level,
@@ -46,9 +48,21 @@ function Index() {
   const currentCard = queue[0];
   const progress = (knownCount / SESSION_SIZE) * 100;
 
-  const startSession = () => {
+  const startSession = (excludeSeen = true) => {
+    const used = usedIdsRef.current;
+    let seen = excludeSeen ? (used.get(level.id) ?? new Set<string>()) : new Set<string>();
+    let fresh = level.cards.filter((c) => !seen.has(c.id));
+    if (fresh.length < SESSION_SIZE) {
+      // Every word in this level has been seen — refill the pool and start over.
+      seen = new Set<string>();
+      fresh = level.cards;
+    }
+    used.set(level.id, seen);
     knownIdsRef.current = new Set();
-    setQueue(shuffle(level.cards).slice(0, SESSION_SIZE));
+    const round = shuffle(fresh).slice(0, SESSION_SIZE);
+    const seenForLevel = used.get(level.id)!;
+    for (const card of round) seenForLevel.add(card.id);
+    setQueue(round);
     setKnownCount(0);
     setReviewedCount(0);
     setIsFlipped(false);

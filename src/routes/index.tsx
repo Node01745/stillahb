@@ -146,6 +146,8 @@ function Index() {
           />
         </section>
 
+        <WordOfTheDay />
+
         <section className="mt-16 flex flex-col items-center gap-3 text-center">
           <span className="text-sm text-mist">
             A short, unhurried practice. Come back tomorrow.
@@ -155,6 +157,38 @@ function Index() {
           </span>
         </section>
       </main>
+    </div>
+  );
+}
+
+// Deterministic word of the day: same word for everyone all day, new one tomorrow.
+function getWordOfTheDay(): Flashcard {
+  const pool = levels.flatMap((l) => l.cards);
+  const now = new Date();
+  const dayIndex = now.getFullYear() * 372 + now.getMonth() * 31 + now.getDate();
+  return pool[dayIndex % pool.length]!;
+}
+
+function WordOfTheDay() {
+  const word = useMemo(getWordOfTheDay, []);
+  return (
+    <div className="relative mx-auto mt-16 max-w-md">
+      <div className="animate-float-soft rounded-3xl bg-white ring-1 ring-black/5 p-7 text-center">
+        <p className="text-xs font-medium uppercase tracking-[0.2em] text-sky">
+          Dagens ord
+        </p>
+        <p className="mt-3 font-display text-3xl font-medium text-ink">{word.swedish}</p>
+        {word.pronunciation && (
+          <p className="mt-1.5 text-sm italic text-mist">
+            {word.pronunciation}
+            {word.partOfSpeech ? ` · ${word.partOfSpeech}` : ""}
+          </p>
+        )}
+        <p className="mt-3 font-body text-base text-ink/80">{word.english}</p>
+        {word.example && (
+          <p className="mt-3 max-w-[30ch] mx-auto text-sm italic text-mist">"{word.example}"</p>
+        )}
+      </div>
     </div>
   );
 }

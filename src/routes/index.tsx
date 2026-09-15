@@ -164,7 +164,7 @@ function Index() {
 
         <section className="mt-16 flex flex-col items-center gap-3 text-center">
           <span className="text-sm text-mist">
-            A short, unhurried practice. Come back tomorrow.
+            Because...such is life.
           </span>
           <span className="text-xs text-mist/70">
             Stilla · a small Swedish ritual

@@ -252,7 +252,7 @@ function Header({ progress, running }: { progress: number; running: boolean }) {
               cy="22"
               r="18"
               fill="none"
-              stroke="oklch(0.726 0.1202 4.90)"
+              stroke="oklch(0.72 0.11 155)"
               strokeWidth="4"
               strokeLinecap="round"
               strokeDasharray={circumference}
